@@ -8,3 +8,7 @@ build/
 */cmake-build-*/
 *.egg
 *.egg-info/
+*.log
+*.txt
+hostfile
+envfile

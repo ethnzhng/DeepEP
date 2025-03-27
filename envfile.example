@@ -1,0 +1,2 @@
+MASTER_ADDR="node_0_ip"
+MASTER_PORT="29501"

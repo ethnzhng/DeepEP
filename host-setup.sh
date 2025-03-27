@@ -23,6 +23,8 @@ sudo ./insmod.sh  # Load kernel modules on the bare-metal system
 gdrcopy_copybw  # Should show bandwidth test results
 
 # Configure NVIDIA driver
-echo 'options nvidia NVreg_EnableStreamMemOPs=1 NVreg_RegistryDwords="PeerMappingOverride=1;"' | sudo tee -a /etc/modprobe.d/nvidia.conf
+if ! grep -q 'options nvidia NVreg_EnableStreamMemOPs=1 NVreg_RegistryDwords="PeerMappingOverride=1;"' /etc/modprobe.d/nvidia.conf; then
+    echo 'options nvidia NVreg_EnableStreamMemOPs=1 NVreg_RegistryDwords="PeerMappingOverride=1;"' | sudo tee -a /etc/modprobe.d/nvidia.conf
+fi
 sudo update-initramfs -u
 sudo reboot

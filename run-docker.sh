@@ -7,6 +7,9 @@ docker run -it \
     --gpus all \
     --shm-size 20gb \
     -v /usr/src:/usr/src \
+    --network host \
+    -v ~/.ssh:/root/.ssh:ro \
+    -v /etc/hosts:/etc/hosts:ro \
     -v ~/repos/DeepEP:/ws/DeepEP \
     -v ~/gdrcopy-2.4.4:/ws/gdrcopy-2.4.4 \
     --workdir /ws/DeepEP \

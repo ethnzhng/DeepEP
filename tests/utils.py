@@ -6,12 +6,40 @@ import torch.distributed as dist
 from typing import Optional
 
 
-def init_dist(local_rank: int, num_local_ranks: int):
+def setup_env():
+    # libfabric config
+    os.environ["FI_PROVIDER"] = "efa"
+    os.environ["FI_EFA_USE_DEVICE_RDMA"] = "1"
+
+    # force nvshmem to use libfabric/efa over ib
+    os.environ["NVSHMEM_REMOTE_TRANSPORT"] = "libfabric"
+    os.environ["NVSHMEM_LIBFABRIC_PROVIDER"] = "efa"
+    os.environ["NVSHMEM_BOOTSTRAP"] = "MPI"
+
+    # os.environ["NCCL_DEBUG"] = "INFO"
+    # os.environ["NVSHMEM_DEBUG"] = "INFO"
+    # os.environ["FI_LOG_LEVEL"] = "warn"
+
+def check_nvlink_p2p(local_rank, node_rank):
+    if local_rank == 0:
+        all_can_access = True
+        for i in range(torch.cuda.device_count()):
+            for j in range(torch.cuda.device_count()):
+                if i != j:
+                    can_p2p = torch.cuda.can_device_access_peer(i, j)
+                    if not can_p2p:
+                        all_can_access = False
+        if all_can_access:
+            print(f"Node {node_rank}: All GPUs can access all other GPUs")
+        else:
+            print(f"Node {node_rank}: Not all GPUs can access all other GPUs")
+
+def init_dist(local_rank: int, num_local_ranks: int, num_nodes: int, node_rank: int):
     # NOTES: you may rewrite this function with your own cluster settings
+    setup_env()
+
     ip = os.getenv('MASTER_ADDR', '127.0.0.1')
     port = int(os.getenv('MASTER_PORT', '8361'))
-    num_nodes = int(os.getenv('WORLD_SIZE', 1))
-    node_rank = int(os.getenv('RANK', 0))
     assert (num_local_ranks < 8 and num_nodes == 1) or num_local_ranks == 8
 
     dist.init_process_group(
@@ -23,6 +51,8 @@ def init_dist(local_rank: int, num_local_ranks: int):
     torch.set_default_dtype(torch.bfloat16)
     torch.set_default_device('cuda')
     torch.cuda.set_device(local_rank)
+
+    check_nvlink_p2p(local_rank, node_rank)
 
     return dist.get_rank(), dist.get_world_size(), dist.new_group(list(range(num_local_ranks * num_nodes)))
 
