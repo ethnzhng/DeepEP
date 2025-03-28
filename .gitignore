@@ -12,3 +12,6 @@ build/
 *.txt
 hostfile
 envfile
+__pycache__/
+*.so
+dist/

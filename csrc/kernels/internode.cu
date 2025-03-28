@@ -706,9 +706,25 @@ dispatch(int4* recv_x, float* recv_x_scales, int64_t* recv_topk_idx, float* recv
 
                 // Issue RDMA send
                 auto num_tokens_to_issue = min(num_tokens_processed, num_max_rdma_chunked_send_tokens);
+                if (!(num_tokens_to_issue >= 0 and num_tokens_to_issue <= synced_num_tokens_to_send)) {
+                    printf("Thread info:\n  num_tokens_to_issue: %d\n  num_tokens_processed: %d\n  num_max_rdma_chunked_send_tokens: %d\n  synced_num_tokens_to_send: %d\n",
+                        num_tokens_to_issue,
+                        num_tokens_processed,
+                        num_max_rdma_chunked_send_tokens,
+                        synced_num_tokens_to_send);
+                }
                 EP_DEVICE_ASSERT(num_tokens_to_issue >= 0 and num_tokens_to_issue <= synced_num_tokens_to_send);
                 if (dst_rdma_rank != rdma_rank) {
                     auto dst_slot_idx = synced_last_issued_tail % num_max_rdma_chunked_recv_tokens;
+                    if (!(dst_slot_idx + num_tokens_to_issue <= num_max_rdma_chunked_recv_tokens)) {
+                        printf("Thread info:\n  dst_rdma_rank: %d\n  rdma_rank: %d\n  synced_last_issued_tail: %d\n  dst_slot_idx: %d\n  num_tokens_to_issue: %d\n  num_max_rdma_chunked_recv_tokens: %d\n",
+                            dst_rdma_rank,
+                            rdma_rank, 
+                            synced_last_issued_tail,
+                            dst_slot_idx,
+                            num_tokens_to_issue,
+                            num_max_rdma_chunked_recv_tokens);
+                    }
                     EP_DEVICE_ASSERT(dst_slot_idx + num_tokens_to_issue <= num_max_rdma_chunked_recv_tokens);
                     nvshmemx_int8_put_nbi_warp(rdma_channel_data.recv_buffer(rdma_rank) + dst_slot_idx * num_bytes_per_rdma_token,
                                                rdma_channel_data.send_buffer(dst_rdma_rank) + dst_slot_idx * num_bytes_per_rdma_token,

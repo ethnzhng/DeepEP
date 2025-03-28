@@ -837,6 +837,8 @@ Buffer::internode_dispatch(const torch::Tensor& x, const std::optional<torch::Te
                         buffer_ptrs_gpu, config.num_max_nvl_chunked_send_tokens, config.num_max_nvl_chunked_recv_tokens,
                         rank, num_ranks, cached_mode,
                         comm_stream, num_channels, low_latency_mode);
+    
+    CUDA_CHECK(cudaDeviceSynchronize());
 
     // Wait streams
     std::optional<EventHandle> event;
