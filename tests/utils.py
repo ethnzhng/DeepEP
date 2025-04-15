@@ -11,14 +11,19 @@ def setup_env():
     os.environ["FI_PROVIDER"] = "efa"
     os.environ["FI_EFA_USE_DEVICE_RDMA"] = "1"
 
-    # force nvshmem to use libfabric/efa over ib
+    # force nvshmem to use libfabric/efa over ibrc
     os.environ["NVSHMEM_REMOTE_TRANSPORT"] = "libfabric"
     os.environ["NVSHMEM_LIBFABRIC_PROVIDER"] = "efa"
-    os.environ["NVSHMEM_BOOTSTRAP"] = "MPI"
 
+    # use mpi to init nvshmem
+    os.environ["NVSHMEM_BOOTSTRAP"] = "MPI"
+    os.environ["NVSHMEM_ENABLE_NIC_PE_MAPPING"] = "1"
+    
     # os.environ["NCCL_DEBUG"] = "INFO"
     # os.environ["NVSHMEM_DEBUG"] = "INFO"
     # os.environ["FI_LOG_LEVEL"] = "warn"
+    # os.environ["NVSHMEM_VERSION"] = "1"
+    # os.environ["NVSHMEM_INFO"] = "1"
 
 def check_nvlink_p2p(local_rank, node_rank):
     if local_rank == 0:

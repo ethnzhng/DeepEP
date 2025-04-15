@@ -2,6 +2,7 @@
 set -e
 
 # Run this on master node to sync workdir and build on other node
+REBUILD_CSRC=$1
 
 HOSTFILE="hostfile"
 WORKDIR="/home/ubuntu/repos/DeepEP/"
@@ -27,12 +28,20 @@ rsync \
     --filter=":- .gitignore" \
     -e ssh \
     $WORKDIR $USER@$TARGET_HOST:$WORKDIR
-echo "Sync completed!"
+echo "Workdirs synced"
 
-echo "Building DeepEP on both nodes"
-set -x
-mpirun \
-    -np 2 \
-    -hostfile ${HOSTFILE} \
-    -map-by ppr:1:node \
-    bash build-deepep-dev.sh
+if [ -n $REBUILD_CSRC ]; then
+    echo "Rebuilding DeepEP on both nodes"
+    set -x
+    mpirun \
+        -np 2 \
+        -hostfile ${HOSTFILE} \
+        -map-by ppr:1:node \
+        --mca pml ^cm \
+        --mca btl tcp,self \
+        --mca btl_tcp_if_exclude lo,docker0 \
+        --bind-to none \
+        bash build-deepep-dev.sh
+else
+    echo "Skipping rebuild cpp/cuda"
+fi

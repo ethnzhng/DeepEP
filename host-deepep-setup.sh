@@ -5,20 +5,15 @@ sudo apt install -y libnccl2 libnccl-dev
 
 # build & install NVSHMEM
 cd ~
-wget https://developer.nvidia.com/downloads/assets/secure/nvshmem/nvshmem_src_3.2.5-1.txz
-tar -xvf nvshmem_src_3.2.5-1.txz
+# wget https://developer.nvidia.com/downloads/assets/secure/nvshmem/nvshmem_src_3.2.5-1.txz
+# tar -xvf nvshmem_src_3.2.5-1.txz
 cd nvshmem_src
 
 # apply DeekSeek patch
-git apply ~/repos/DeepEP/third-party/nvshmem.patch
+# git apply ~/repos/DeepEP/third-party/nvshmem.patch
 
-export FI_PROVIDER="efa"
-export FI_EFA_USE_DEVICE_RDMA=1
 
-export NVSHMEM_LIBFABRIC_PROVIDER="efa"
-export NVSHMEM_BOOTSTRAP="MPI"
-
-export CUDA_HOME=/usr/local/cuda
+export CUDA_HOME=/usr/local/cuda-12.2
 export LIBFABRIC_HOME=/opt/amazon/efa
 export GDRCOPY_HOME=/usr/lib/x86_64-linux-gnu
 export NCCL_HOME=/opt/aws-ofi-nccl
@@ -32,7 +27,7 @@ cmake -S . -B build/ -DCMAKE_INSTALL_PREFIX=/usr/local/nvshmem \
     -DMPI_HOME=$MPI_HOME \
     -DNVSHMEM_SHMEM_SUPPORT=OFF \
     -DNVSHMEM_UCX_SUPPORT=OFF \
-    -DNVSHMEM_USE_NCCL=ON \
+    -DNVSHMEM_USE_NCCL=OFF \
     -DNVSHMEM_MPI_SUPPORT=ON \
     -DNVSHMEM_IBGDA_SUPPORT=ON \
     -DNVSHMEM_IBRC_SUPPORT=OFF \
@@ -53,7 +48,7 @@ nvshmem-info -a # Should display details of nvshmem
 
 
 # install deep_ep python
-cd ~/repos/DeepEP
-sudo pip install --upgrade ninja mpi4py
-sudo pip install torch --index-url https://download.pytorch.org/whl/cu121
-sudo -E python3 setup.py install
+# cd ~/repos/DeepEP
+# sudo pip install --upgrade ninja mpi4py
+# sudo pip install torch --index-url https://download.pytorch.org/whl/cu121
+# sudo -E python3 setup.py install
